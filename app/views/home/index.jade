@@ -3,6 +3,13 @@ extends ../shared/template
 block content
   h1 Sapphire Rain
 
+  #login
+    form(method='post', action='/users/login')
+      input(type='email', name='email', placeholder='Email')
+      input(type='password', name='password', placeholder='Password')
+      button Log In
+    button#registration Register
+
 
 
 block scripts

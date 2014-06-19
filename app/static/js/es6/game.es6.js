@@ -1,9 +1,23 @@
-/* global Phaser */
+/* global Phaser, ajax, _ */
 
 (function(){
   'use strict';
+  var game;
+  var lazyPlayerCaught;
 
-  var game = new Phaser.Game(800, 640, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render});
+  $(document).ready(init);
+
+  function init(){
+    game = new Phaser.Game(800, 640, Phaser.AUTO, 'game', {preload: preload, create: create, update: update, render: render});
+    getStats();
+    lazyPlayerCaught = _.debounce(playerCaught, 1000, {leading:true, trailing:false});
+  }
+
+  function getStats(){
+    ajax('/users/stats', 'get', null, html=>{
+      $('#stats').empty().append(html);
+    });
+  }
 
   function preload(){
     game.load.tilemap('background', 'img/assets/background.json', null, Phaser.Tilemap.TILED_JSON);
@@ -62,6 +76,7 @@
     enemy.animations.add('up', [12, 13, 14, 15], 5, true);
     enemy.right = true;
     enemy.down = true;
+    enemy.body.immovable = true;
     enemies.add(enemy);
   }
 
@@ -98,15 +113,19 @@
     enemiesMove(enemy2, 'horizontal');
     enemiesMove(enemy3, 'horizontal');
     enemiesMove(enemy4, 'vertical');
-    game.physics.arcade.overlap(player, enemies, playerCaught);
+    game.physics.arcade.collide(player, enemies, lazyPlayerCaught);
   }
 
   function playerCaught(){
-    player.body.x = 128;
-    player.body.y = 630;
     player.life -= 1;
-    console.log('life');
-    console.log(player.life);
+    if(player.life <= 0){
+      player.body.x = 128;
+      player.body.y = 630;
+      player.life = 3;
+    }
+    ajax('/users/life', 'put', {life: player.life}, ()=>{
+      getStats();
+    });
   }
 
   function enemiesMove(enemy, direction){

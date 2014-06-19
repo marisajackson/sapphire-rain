@@ -32,7 +32,7 @@
     "cookies":         "*",
     "async":           "*",
     "request":         "*",
-    "passport-local":  "*"
+    "passport-facebook":  "*"
   },
   "devDependencies": {
     "grunt":                "*",
