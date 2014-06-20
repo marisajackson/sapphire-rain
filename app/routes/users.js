@@ -4,7 +4,21 @@ var traceur = require('traceur');
 var User = traceur.require(__dirname + '/../../app/models/user.js');
 
 exports.life = (req, res)=>{
-  res.locals.user.updateLife(req.body.life);
+  res.locals.user.updateLife(req.body);
+  res.locals.user.save(user=>{
+    res.send(user);
+  });
+};
+
+exports.jewels = (req, res)=>{
+  res.locals.user.updateJewels(req.body.amount);
+  res.locals.user.save(user=>{
+    res.send(user);
+  });
+};
+
+exports.keys = (req, res)=>{
+  res.locals.user.updateKeys(req.body.amount);
   res.locals.user.save(user=>{
     res.send(user);
   });

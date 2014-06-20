@@ -11,7 +11,23 @@ class User {
   }
 
   updateLife(life){
-    this.life = life;
+    this.life = life.life;
+    if(life.dead === 'true'){
+      if(this.jewels){
+        this.jewels -= 100;
+        if(this.jewels < 0){
+          this.jewels = 0;
+        }
+      }
+    }
+  }
+
+  updateJewels(amt){
+    this.jewels = amt;
+  }
+
+  updateKeys(amt){
+    this.items.keys = amt;
   }
 
   static register(obj, fn){
@@ -24,7 +40,7 @@ class User {
         user.email = obj.email;
         user.name = obj.name;
         user.password = bcrypt.hashSync(obj.password, 8);
-        user.items = [{keys: 0}];
+        user.items = {keys: 0};
         user.jewels = 0;
         user.life = 3;
         users.save(user, ()=>fn(user));

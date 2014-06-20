@@ -27,6 +27,8 @@ function load(app, fn){
   app.post('/users', dbg, users.create);
   app.get('/users/stats', dbg, users.stats);
   app.put('/users/life', dbg, users.life);
+  app.put('/users/jewels', dbg, users.jewels);
+  app.put('/users/keys', dbg, users.keys);
 
   app.get('/game', dbg,  game.index);
 
