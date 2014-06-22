@@ -22,11 +22,16 @@
   function preload(){
     game.load.tilemap('background', 'img/assets/background.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.tilemap('collisions', 'img/assets/collision.json', null, Phaser.Tilemap.TILED_JSON);
+    // game.load.tilemap('foreground', 'img/assets/foreground.json', null, Phaser.Tilemap.TILED_JSON);
     // game.load.tilemap('jewels', 'img/assets/jewels.json', null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tallgrass', 'img/assets/tallgrass.png');
     game.load.image('bush', 'img/assets/bush.png');
+    game.load.image('wall', 'img/assets/wall.png');
+    game.load.spritesheet('red', 'img/assets/red.png', 800, 640);
+    game.load.spritesheet('lock', 'img/assets/lock.png', 48, 48);
     // game.load.image('littleshrooms', 'img/littleshrooms.png');
     // game.load.image('terrain', 'img/terrain.png');
+    game.load.spritesheet('bush', 'img/assets/bush.png', 32, 32);
     game.load.spritesheet('character', 'img/assets/main-player.png', 64, 64);
     game.load.spritesheet('enemy', 'img/assets/enemy.png', 48, 64);
     game.load.spritesheet('icons', 'img/assets/icons.png', 24, 24);
@@ -35,6 +40,7 @@
     game.load.spritesheet('redJewel', 'img/assets/red-jewels.png', 32, 32);
     game.load.spritesheet('pinkJewel', 'img/assets/pink-jewels.png', 32, 32);
     game.load.spritesheet('yellowJewel', 'img/assets/yellow-jewels.png', 32, 32);
+    game.load.spritesheet('doors', 'img/assets/doors.png', 32, 64);
   }
 
   var gameHeight = 640;
@@ -43,24 +49,65 @@
   var cursors;
   var player;
   var collisions;
-  var background;
-  var collisionMap;
-  var terrain;
-  var enemies;
+  var background, collisionMap, terrain;
+  var enemies, bushes;
   var enemy1, enemy2, enemy3, enemy4;
-  var key;
-  var greenJewels, blueJewels, yellowJewels, pinkJewels, redJewels, jewels;
+  var key, lock, jewels, door, injured, bush;
+  // var foreground;
 
   function create(){
     game.physics.startSystem(Phaser.Physics.ARCADE);
     addBackgroundMap();
     addCollisionMap();
-    addEnemySprites();
+    // addForegroundMap();
     addItems();
     jewels = game.add.group();
     jewels.enableBody = true;
     addJewels();
+    addDoor();
+    addLock();
+    addBushes();
     addPlayerSprite();
+    addEnemySprites();
+  }
+
+  function addBushes(){
+    bushes = game.add.group();
+    for(var i = 1; i < 24; i++){
+      if(i !== 5){
+        bush = game.add.sprite(tile * i, tile + 16, 'bush');
+        game.physics.enable(bush);
+        bush.body.immovable = true;
+        bushes.add(bush);
+      }
+    }
+  }
+
+  // function addForegroundMap(){
+  //   foreground = game.add.tilemap('foreground');
+  //   foreground.addTilesetImage('red');
+  //   injured = foreground.createLayer('Injured');
+  // }
+
+  function addLock(){
+    lock = game.add.sprite(tile*5 + 4, 20, 'lock');
+    lock.scale.setTo(0.5);
+    game.physics.enable(lock);
+    lock.body.immovable = true;
+  }
+
+  function addDoor(){
+    door = game.add.sprite(tile*5-3, -5, 'doors', 57);
+    game.physics.enable(door);
+    door.scale.setTo(1.10);
+    door.body.checkCollision.down = true;
+    door.body.checkCollision.right = false;
+    door.body.checkCollision.left = false;
+    door.body.immovable = true;
+    door.animations.add('closed', [83, 70, 57], 10, false);
+    door.animations.add('open', [57, 70, 83], 10, false);
+    door.unlocked = false;
+    door.opened = false;
   }
 
   function addItems(){
@@ -69,42 +116,12 @@
     game.physics.enable(key);
   }
 
-  function addJewel(x, y, color, sprite){
+  function addJewel(x, y, sprite){
     jewels.add(game.add.sprite(gameWidth - (tile * x), tile* y, sprite));
     jewels.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
     jewels.callAll('play', null, 'spin');
     // game.phyics.enable(color);
   }
-
-  // function addJewel(x, y){
-  //   greenJewels.add(game.add.sprite(gameWidth - (tile * x), tile* y, 'greenJewels'));
-  //   greenJewels.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
-  //   greenJewels.callAll('play', null, 'spin');
-  // }
-  //
-  // function addJewel(x, y){
-  //   blueJewels.add(game.add.sprite(gameWidth - (tile * x), tile* y, 'blueJewels'));
-  //   blueJewels.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
-  //   blueJewels.callAll('play', null, 'spin');
-  // }
-  //
-  // function addJewel(x, y){
-  //   yellowJewels.add(game.add.sprite(gameWidth - (tile * x), tile* y, 'yellowJewels'));
-  //   yellowJewels.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
-  //   yellowJewels.callAll('play', null, 'spin');
-  // }
-  //
-  // function addJewel(x, y){
-  //   pinkJewels.add(game.add.sprite(gameWidth - (tile * x), tile* y, 'pinkJewels'));
-  //   pinkJewels.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
-  //   pinkJewels.callAll('play', null, 'spin');
-  // }
-  //
-  // function addRedJewels(x, y){
-  //   redJewels.add(game.add.sprite(gameWidth - (tile * x), tile* y, 'redJewels'));
-  //   redJewels.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
-  //   redJewels.callAll('play', null, 'spin');
-  // }
 
   function addEnemySprites(){
     enemies = game.add.group();
@@ -124,7 +141,7 @@
 
   function createEnemyAnimations(enemy){
     game.physics.enable(enemy);
-    enemy.body.setSize(32, 32, 8, 32);
+    enemy.body.setSize(32, 64, 8, 0);
     enemy.body.collideWorldBounds = true;
     enemy.animations.add('right', [8, 9, 10, 11], 5, true);
     enemy.animations.add('left', [4, 5, 6, 7], 5, true);
@@ -137,34 +154,41 @@
   }
 
   function addPlayerSprite(){
-    player = game.add.sprite(128, 630, 'character');
+    player = game.add.sprite(128, gameHeight - (tile*3), 'character');
+    // player = game.add.sprite(128, tile *2, 'character');
     game.physics.enable(player);
-    player.body.setSize(32, 32, 16, 32);
+    player.body.setSize(20, 28, 24, 32);
     player.body.collideWorldBounds = true;
-    player.life = 3;
-    player.jewels = 0;
-    player.keys = 0;
+    // player.body.immovable = true;
     player.animations.add('up', [0, 1, 2, 3, 4, 5, 6, 7, 8], 10, true);
     player.animations.add('left', [9, 10, 11, 12, 13, 14, 15, 16, 17], 10, true);
     player.animations.add('down', [18, 19, 20, 21, 22, 23, 24, 25, 26], 10, true);
     player.animations.add('right', [27, 28, 29, 30, 31, 32, 33, 34], 10, true);
+
+    ajax('/users/life', 'put', {life: 3, dead: 'false'}, user=>{
+      player.life = user.life * 1;
+      player.jewels = user.jewels * 1;
+      player.keys = user.items.keys * 1;
+      getStats();
+    }, 'json');
   }
 
   function addBackgroundMap(){
     background = game.add.tilemap('background');
     background.addTilesetImage('tallgrass');
+    background.addTilesetImage('wall');
     terrain = background.createLayer('Background');
   }
 
   function addCollisionMap(){
     collisionMap = game.add.tilemap('collisions');
     collisionMap.addTilesetImage('bush');
-    collisionMap.setCollision(1);
+    collisionMap.addTilesetImage('wall');
+    collisionMap.setCollisionBetween(1, 3);
     collisions = collisionMap.createLayer('collision');
   }
 
   function update(){
-    game.physics.arcade.collide(player, collisions);
     cursors = game.input.keyboard.createCursorKeys();
     playerMove();
     enemiesMove(enemy1, 'horizontal');
@@ -173,7 +197,33 @@
     enemiesMove(enemy4, 'vertical');
     game.physics.arcade.collide(player, enemies, lazyPlayerCaught);
     game.physics.arcade.overlap(player, jewels, collectJewel);
+    game.physics.arcade.collide(player, collisions);
+    game.physics.arcade.collide(player, bushes);
     game.physics.arcade.overlap(player, key, collectKey);
+    game.physics.arcade.collide(player, lock, unlockDoor);
+    if(door.unlocked && !door.opened){
+      game.physics.arcade.overlap(player, door, openDoor);
+    }
+    if(door.opened && !game.physics.arcade.overlap(player, door)){
+      door.opened = false;
+      door.animations.play('closed');
+    }
+  }
+
+  function unlockDoor(){
+    if(player.keys){
+      door.unlocked = true;
+      lock.kill();
+      player.keys -= 1;
+      ajax('/users/keys', 'put', {amount: player.keys}, ()=>{
+        getStats();
+      });
+    }
+  }
+
+  function openDoor(){
+    door.opened = true;
+    door.animations.play('open');
   }
 
   function collectKey(player, key){
@@ -185,7 +235,6 @@
   }
 
   function collectJewel(player, jewel){
-    console.log(jewel.key);
     var amount;
     switch(jewel.key){
       case 'greenJewel':
@@ -212,6 +261,7 @@
   }
 
   function playerCaught(){
+    addInjuredSprite();
     var dead;
     player.life -= 1;
     if(player.life <= 0){
@@ -225,6 +275,13 @@
     ajax('/users/life', 'put', {life: player.life, dead: dead}, ()=>{
       getStats();
     });
+  }
+
+  function addInjuredSprite(){
+    injured = game.add.sprite(0,0,'red');
+    setTimeout(function(){
+      injured.kill();
+    }, 100);
   }
 
   function enemiesMove(enemy, direction){
@@ -276,105 +333,89 @@
   }
 
   function addJewels(){
-    // greenJewels = game.add.group();
-    // greenJewels.enableBody = true;
-    //
-    // blueJewels = game.add.group();
-    // blueJewels.enableBody = true;
-    //
-    // pinkJewels = game.add.group();
-    // pinkJewels.enableBody = true;
-    //
-    // yellowJewels = game.add.group();
-    // yellowJewels.enableBody = true;
-    //
-    // redJewels = game.add.group();
-    // redJewels.enableBody = true;
-
-    addJewel(7,8, greenJewels, 'greenJewel');
-    addJewel(7,9, greenJewels, 'greenJewel');
-    addJewel(7,10, greenJewels, 'greenJewel');
-    addJewel(8,8, blueJewels, 'blueJewel');
-    addJewel(8,9, blueJewels, 'blueJewel');
-    addJewel(8,10, greenJewels, 'greenJewel');
-    addJewel(9,10, greenJewels, 'greenJewel');
-    addJewel(9,9, greenJewels, 'greenJewel');
-    addJewel(9,8, greenJewels, 'greenJewel');
-    addJewel(10,8, greenJewels, 'greenJewel');
-    addJewel(10,9, blueJewels, 'blueJewel');
-    addJewel(10,10, blueJewels, 'blueJewel');
-    addJewel(10,11, greenJewels, 'greenJewel');
-    addJewel(10,12, greenJewels, 'greenJewel');
-    addJewel(10,13, pinkJewels, 'pinkJewel');
-    addJewel(11,8, greenJewels, 'greenJewel');
-    addJewel(11,9, greenJewels, 'greenJewel');
-    addJewel(11,10, blueJewels, 'blueJewel');
-    addJewel(11,11, greenJewels, 'greenJewel');
-    addJewel(11,12, greenJewels, 'greenJewel');
-    addJewel(11,13, greenJewels, 'greenJewel');
-    addJewel(12,8, greenJewels, 'greenJewel');
-    addJewel(12,9, greenJewels, 'greenJewel');
-    addJewel(12,10, greenJewels, 'greenJewel');
-    addJewel(12,11, blueJewels, 'blueJewel');
-    addJewel(12,12, blueJewels, 'blueJewel');
-    addJewel(12,13, greenJewels, 'greenJewel');
-    addJewel(13,8, greenJewels, 'greenJewel');
-    addJewel(13,9, greenJewels, 'greenJewel');
-    addJewel(13,10, greenJewels, 'greenJewel');
-    addJewel(13,11, greenJewels, 'greenJewel');
-    addJewel(13,12, blueJewels, 'blueJewel');
-    addJewel(13,13, greenJewels, 'greenJewel');
-    addJewel(14,8, greenJewels, 'greenJewel');
-    addJewel(14,9, greenJewels, 'greenJewel');
-    addJewel(14,10, greenJewels, 'greenJewel');
-    addJewel(14,11, blueJewels, 'blueJewel');
-    addJewel(14,12, blueJewels, 'blueJewel');
-    addJewel(14,13, greenJewels, 'greenJewel');
-    addJewel(15,8, greenJewels, 'greenJewel');
-    addJewel(15,9, greenJewels, 'greenJewel');
-    addJewel(15,10, greenJewels, 'greenJewel');
-    addJewel(15,11, greenJewels, 'greenJewel');
-    addJewel(15,12, greenJewels, 'greenJewel');
-    addJewel(15,13, yellowJewels, 'yellowJewel');
-    addJewel(16,8, blueJewels, 'blueJewel');
-    addJewel(16,9, blueJewels, 'blueJewel');
-    addJewel(16,10, blueJewels, 'blueJewel');
-    addJewel(16,11, greenJewels, 'greenJewel');
-    addJewel(17,8, blueJewels, 'blueJewel');
-    addJewel(17,9, greenJewels, 'greenJewel');
-    addJewel(17,10, blueJewels, 'blueJewel');
-    addJewel(17,11, blueJewels, 'blueJewel');
-    addJewel(18,8, blueJewels, 'blueJewel');
-    addJewel(18,9, greenJewels, 'greenJewel');
-    addJewel(18,10, greenJewels, 'greenJewel');
-    addJewel(18,11, greenJewels, 'greenJewel');
-    addJewel(19,8, greenJewels, 'greenJewel');
-    addJewel(19,9, greenJewels, 'greenJewel');
-    addJewel(19,10, greenJewels, 'greenJewel');
-    addJewel(19,11, greenJewels, 'greenJewel');
-    addJewel(20,11, greenJewels, 'greenJewel');
-    addJewel(20,12, greenJewels, 'greenJewel');
-    addJewel(20,13, greenJewels, 'greenJewel');
-    addJewel(21,11, greenJewels, 'greenJewel');
-    addJewel(21,12, greenJewels, 'greenJewel');
-    addJewel(21,13, greenJewels, 'greenJewel');
-    addJewel(22, 11, blueJewels, 'blueJewel');
-    addJewel(22,12, greenJewels, 'greenJewel');
-    addJewel(22,13, greenJewels, 'greenJewel');
-    addJewel(23,11, blueJewels, 'blueJewel');
-    addJewel(23,12, greenJewels, 'greenJewel');
-    addJewel(23,13, greenJewels, 'greenJewel');
-    addJewel(24,11, redJewels, 'redJewel');
-    addJewel(24,12, redJewels, 'redJewel');
-    addJewel(24,13, redJewels, 'redJewel');
-    addJewel(25,11, redJewels, 'redJewel');
-    addJewel(25,12, redJewels, 'redJewel');
+    addJewel(7,8, 'greenJewel');
+    addJewel(7,9, 'greenJewel');
+    addJewel(7,10, 'greenJewel');
+    addJewel(8,8, 'blueJewel');
+    addJewel(8,9, 'blueJewel');
+    addJewel(8,10, 'greenJewel');
+    addJewel(9,10, 'greenJewel');
+    addJewel(9,9, 'greenJewel');
+    addJewel(9,8, 'greenJewel');
+    addJewel(10,8, 'greenJewel');
+    addJewel(10,9, 'blueJewel');
+    addJewel(10,10, 'blueJewel');
+    addJewel(10,11, 'greenJewel');
+    addJewel(10,12, 'greenJewel');
+    addJewel(10,13, 'pinkJewel');
+    addJewel(11,8, 'greenJewel');
+    addJewel(11,9, 'greenJewel');
+    addJewel(11,10, 'blueJewel');
+    addJewel(11,11, 'greenJewel');
+    addJewel(11,12, 'greenJewel');
+    addJewel(11,13, 'greenJewel');
+    addJewel(12,8, 'greenJewel');
+    addJewel(12,9, 'greenJewel');
+    addJewel(12,10, 'greenJewel');
+    addJewel(12,11, 'blueJewel');
+    addJewel(12,12, 'blueJewel');
+    addJewel(12,13, 'greenJewel');
+    addJewel(13,8, 'greenJewel');
+    addJewel(13,9, 'greenJewel');
+    addJewel(13,10, 'greenJewel');
+    addJewel(13,11, 'greenJewel');
+    addJewel(13,12, 'blueJewel');
+    addJewel(13,13, 'greenJewel');
+    addJewel(14,8, 'greenJewel');
+    addJewel(14,9, 'greenJewel');
+    addJewel(14,10, 'greenJewel');
+    addJewel(14,11, 'blueJewel');
+    addJewel(14,12, 'blueJewel');
+    addJewel(14,13, 'greenJewel');
+    addJewel(15,8, 'greenJewel');
+    addJewel(15,9, 'greenJewel');
+    addJewel(15,10, 'greenJewel');
+    addJewel(15,11, 'greenJewel');
+    addJewel(15,12, 'greenJewel');
+    addJewel(15,13, 'yellowJewel');
+    addJewel(16,8, 'blueJewel');
+    addJewel(16,9, 'blueJewel');
+    addJewel(16,10, 'blueJewel');
+    addJewel(16,11, 'greenJewel');
+    addJewel(17,8, 'blueJewel');
+    addJewel(17,9, 'greenJewel');
+    addJewel(17,10, 'blueJewel');
+    addJewel(17,11, 'blueJewel');
+    addJewel(18,8, 'blueJewel');
+    addJewel(18,9, 'greenJewel');
+    addJewel(18,10, 'greenJewel');
+    addJewel(18,11, 'greenJewel');
+    addJewel(19,8, 'greenJewel');
+    addJewel(19,9, 'greenJewel');
+    addJewel(19,10, 'greenJewel');
+    addJewel(19,11, 'greenJewel');
+    addJewel(20,11, 'greenJewel');
+    addJewel(20,12, 'greenJewel');
+    addJewel(20,13, 'greenJewel');
+    addJewel(21,11, 'greenJewel');
+    addJewel(21,12, 'greenJewel');
+    addJewel(21,13, 'greenJewel');
+    addJewel(22, 11, 'blueJewel');
+    addJewel(22,12, 'greenJewel');
+    addJewel(22,13, 'greenJewel');
+    addJewel(23,11, 'blueJewel');
+    addJewel(23,12, 'greenJewel');
+    addJewel(23,13, 'greenJewel');
+    addJewel(24,11, 'redJewel');
+    addJewel(24,12, 'redJewel');
+    addJewel(24,13, 'redJewel');
+    addJewel(25,11, 'redJewel');
+    addJewel(25,12, 'redJewel');
   }
 
   function render(){
     // game.debug.body(player);
     // game.debug.body(enemy1);
   }
-
 
 })();

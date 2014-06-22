@@ -6,6 +6,8 @@ var User = traceur.require(__dirname + '/../../app/models/user.js');
 exports.life = (req, res)=>{
   res.locals.user.updateLife(req.body);
   res.locals.user.save(user=>{
+    console.log('send');
+    console.log(user);
     res.send(user);
   });
 };

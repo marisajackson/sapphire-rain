@@ -7,7 +7,7 @@ var _ = require('lodash');
 
 class User {
   save(fn){
-    users.save(this, ()=>fn());
+    users.save(this, ()=>fn(this));
   }
 
   updateLife(life){
@@ -38,7 +38,6 @@ class User {
         user = new User();
         user.username = obj.username;
         user.email = obj.email;
-        user.name = obj.name;
         user.password = bcrypt.hashSync(obj.password, 8);
         user.items = {keys: 0};
         user.jewels = 0;
