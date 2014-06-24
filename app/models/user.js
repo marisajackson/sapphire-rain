@@ -26,8 +26,9 @@ class User {
     this.jewels = amt;
   }
 
-  updateKeys(amt){
+  updateKeys(amt, level){
     this.items.keys = amt;
+    this.lastCompletedLevel = level;
   }
 
   static register(obj, fn){
@@ -42,6 +43,7 @@ class User {
         user.items = {keys: 0};
         user.jewels = 0;
         user.life = 3;
+        user.lastCompletedLevel = 0;
         users.save(user, ()=>fn(user));
       }
     });

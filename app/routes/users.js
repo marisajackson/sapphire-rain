@@ -20,7 +20,7 @@ exports.jewels = (req, res)=>{
 };
 
 exports.keys = (req, res)=>{
-  res.locals.user.updateKeys(req.body.amount);
+  res.locals.user.updateKeys(req.body.amount, req.body.level);
   res.locals.user.save(user=>{
     res.send(user);
   });
