@@ -27,6 +27,7 @@
     game.load.image('tallgrass', 'img/assets/tallgrass.png');
     game.load.image('bush', 'img/assets/bush.png');
     game.load.image('wall', 'img/assets/wall.png');
+    game.load.spritesheet('win', 'img/assets/win.png', 800, 640);
     game.load.spritesheet('rug', 'img/assets/rug.png', 32, 32);
     game.load.spritesheet('arrow-right', 'img/assets/arrowRight.png', 35, 32);
     game.load.spritesheet('arrow-left', 'img/assets/arrowLeft.png', 35, 32);
@@ -46,7 +47,7 @@
     game.load.spritesheet('doors', 'img/assets/doors.png', 32, 64);
   }
 
-  var gameHeight = 1280;
+  var gameHeight = 1920;
   var gameWidth = 800;
   var tile = 32;
   var cursors;
@@ -74,6 +75,7 @@
     addBackgroundMap();
     addCollisionMap();
     // addItems();
+    game.add.sprite(0,0,'win');
     jewels = game.add.group();
     jewels.enableBody = true;
     addJewels();
@@ -92,22 +94,22 @@
   }
 
   function addRug(){
-    game.add.sprite(tile*5, (gameHeight/2) - tile, 'rug');
+    game.add.sprite(tile*5, (gameHeight/3)*2 - tile, 'rug');
   }
 
   function addArchers(){
     archers = game.add.group();
 
-    archer1 = game.add.sprite(-tile/2, (gameHeight/2) - tile * 9, 'archer', 247);
+    archer1 = game.add.sprite(-tile/2, (gameHeight/3)*2 - tile * 9, 'archer', 247);
     createArcherAnimations(archer1);
 
-    archer2 = game.add.sprite(-tile/2, (gameHeight/2) - tile * 17, 'archer', 247);
+    archer2 = game.add.sprite(-tile/2, (gameHeight/3)*2 - tile * 17, 'archer', 247);
     createArcherAnimations(archer2);
 
-    archer3 = game.add.sprite(gameWidth - tile*1.5, (gameHeight/2) - tile * 13, 'archer', 220);
+    archer3 = game.add.sprite(gameWidth - tile*1.5, (gameHeight/3)*2 - tile * 13, 'archer', 220);
     createArcherAnimations(archer3);
 
-    archer4 = game.add.sprite(gameWidth - tile*1.5, (gameHeight/2) - tile * 17, 'archer', 220);
+    archer4 = game.add.sprite(gameWidth - tile*1.5, (gameHeight/3)*2 - tile * 17, 'archer', 220);
     createArcherAnimations(archer4);
   }
 
@@ -137,7 +139,7 @@
     bushes = game.add.group();
     for(var i = 1; i < 24; i++){
       if(i !== 5){
-        bush = game.add.sprite(tile * i, (gameHeight/2) + tile + 16, 'bush');
+        bush = game.add.sprite(tile * i, (gameHeight/3)*2 + tile + 16, 'bush');
         game.physics.enable(bush);
         bush.body.immovable = true;
         bushes.add(bush);
@@ -145,7 +147,7 @@
     }
     for(var j = 0; j < 25; j++){
       if(j !== 19){
-        bush = game.add.sprite(tile * j, tile + 10, 'bush');
+        bush = game.add.sprite(tile * j, gameHeight/3 + tile + 10, 'bush');
         game.physics.enable(bush);
         bush.body.immovable = true;
         bushes.add(bush);
@@ -155,14 +157,14 @@
 
   function addLocks(){
     locks = game.add.group();
-    var lock1 = game.add.sprite(tile*5 + 4, (gameHeight/2) + 20, 'lock');
+    var lock1 = game.add.sprite(tile*5 + 4, (gameHeight/3)*2 + 20, 'lock');
     lock1.door = door1;
     locks.add(lock1);
     if(player.lastCompletedLevel > 0){
       lock1.door.unlocked = true;
       lock1.kill();
     }
-    var lock2 = game.add.sprite(gameWidth - tile*6 +4, +20, 'lock');
+    var lock2 = game.add.sprite(gameWidth - tile*6 +4, (gameHeight/3) +20, 'lock');
     lock2.door = door2;
     locks.add(lock2);
     if(player.lastCompletedLevel > 1){
@@ -178,9 +180,9 @@
 
   function addDoors(){
     doors = game.add.group();
-    door1 = game.add.sprite(tile*5-3, (gameHeight/2) -5, 'doors', 57);
+    door1 = game.add.sprite(tile*5-3, (gameHeight/3)*2 -5, 'doors', 57);
     doors.add(door1);
-    door2 = game.add.sprite(gameWidth - tile*6 - 3, -5, 'doors', 57);
+    door2 = game.add.sprite(gameWidth - tile*6 - 3, gameHeight/3 -5, 'doors', 57);
     doors.add(door2);
     doors.forEach(door=>{
       game.physics.enable(door);
@@ -199,21 +201,18 @@
   function addItems(){
     keys = game.add.group();
 
-    console.log(player.lastCompletedLevel);
-
-
     if(player.lastCompletedLevel < 1){
       keys.add(game.add.sprite(5, gameHeight - (tile * 7), 'icons', 82));
     }
     if(player.lastCompletedLevel < 2){
-      keys.add(game.add.sprite(tile * 3, tile * 6, 'icons', 82));
+      keys.add(game.add.sprite(tile * 3, gameHeight/3 + tile * 6, 'icons', 82));
     }
     game.physics.enable(keys);
     keys.forEach(key=>{key.scale.setTo(1.25, 1.25);});
   }
 
   function addJewel(x, y, sprite){
-    jewels.add(game.add.sprite(gameWidth - (tile * x), (gameHeight/2) + tile* y, sprite));
+    jewels.add(game.add.sprite(gameWidth - (tile * x), (gameHeight/3)*2 + tile* y, sprite));
     jewels.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7], 10, true);
     jewels.callAll('play', null, 'spin');
     // game.phyics.enable(color);
@@ -225,13 +224,13 @@
     enemy1 = game.add.sprite(10, gameHeight - (tile * 5), 'enemy');
     createEnemyAnimations(enemy1);
 
-    enemy2 = game.add.sprite(10, (gameHeight/2)+ tile * 2, 'enemy');
+    enemy2 = game.add.sprite(10, (gameHeight/3)*2+ tile * 2, 'enemy');
     createEnemyAnimations(enemy2);
 
-    enemy3 = game.add.sprite(tile * 3, (gameHeight/2) + tile * 5, 'enemy');
+    enemy3 = game.add.sprite(tile * 3, (gameHeight/3)*2 + tile * 5, 'enemy');
     createEnemyAnimations(enemy3);
 
-    enemy4 = game.add.sprite(gameWidth - (tile * 4.75), (gameHeight/2) + tile, 'enemy');
+    enemy4 = game.add.sprite(gameWidth - (tile * 4.75), (gameHeight/3)*2 + tile, 'enemy');
     createEnemyAnimations(enemy4);
   }
 
@@ -251,7 +250,7 @@
 
   function addPlayerSprite(fn){
     player = game.add.sprite(128, gameHeight - (tile*3), 'character');
-    // player = game.add.sprite(128, (gameHeight/2) - tile *2, 'character');
+    // player = game.add.sprite(128, (gameHeight/3)*2 - tile *2, 'character');
     game.physics.enable(player);
     player.body.setSize(20, 20, 24, 40);
     player.body.collideWorldBounds = true;
@@ -261,7 +260,6 @@
     player.animations.add('right', [27, 28, 29, 30, 31, 32, 33, 34], 10, true);
 
     ajax('/users/life', 'put', {life: 3, dead: 'false'}, user=>{
-      console.log(user.lastCompletedLevel);
       player.lastCompletedLevel = user.lastCompletedLevel * 1;
       player.life = user.life * 1;
       player.jewels = user.jewels * 1;
@@ -363,10 +361,10 @@
   }
 
   function shootArrow(){
-    arrows.add(game.add.sprite(3, (gameHeight/2) - tile * 8 - 9, 'arrow-right'));
-    arrows.add(game.add.sprite(3, (gameHeight/2) - tile * 16 - 9, 'arrow-right'));
-    arrows.add(game.add.sprite(gameWidth - 3, (gameHeight/2) - tile * 12 - 9, 'arrow-left'));
-    arrows.add(game.add.sprite(gameWidth - 3, (gameHeight/2) - tile * 16 - 9, 'arrow-left'));
+    arrows.add(game.add.sprite(3, (gameHeight/3)*2 - tile * 8 - 9, 'arrow-right'));
+    arrows.add(game.add.sprite(3, (gameHeight/3)*2 - tile * 16 - 9, 'arrow-right'));
+    arrows.add(game.add.sprite(gameWidth - 3, (gameHeight/3)*2 - tile * 12 - 9, 'arrow-left'));
+    arrows.add(game.add.sprite(gameWidth - 3, (gameHeight/3)*2 - tile * 16 - 9, 'arrow-left'));
     arrows.forEach(arrow=>{
       game.physics.enable(arrow);
       arrow.body.setSize(32,20,3,9);
@@ -381,9 +379,10 @@
   function cameraWatch(){
     if(player.body.y < 640){
       game.camera.y = 0;
-    }
-    if(player.body.y > 640){
+    } else if(player.body.y > 640 && player.body.y < 1280){
       game.camera.y = 640;
+    } else if(player.body.y > 1280){
+      game.camera.y = 1280;
     }
   }
 
@@ -445,8 +444,15 @@
     var dead;
     player.life -= 1;
     if(player.life <= 0){
-      player.body.x = 128;
-      player.body.y = 630;
+      console.log(player.body.y);
+      if(player.body.y < 1280){
+        console.log('lessthan');
+        player.body.x = 128;
+        player.body.y = (gameHeight/3)*2 - 10;
+      } else if(player.body.y > 1280){
+        player.body.x = 128;
+        player.body.y = gameHeight - tile;
+      }
       player.life = 3;
       dead = true;
     } else {
@@ -458,12 +464,12 @@
   }
 
   function addInjuredSprite(){
-    injured = game.add.sprite(0,gameHeight/2,'red');
+    injured = game.add.sprite(0,gameHeight/3,'red');
     setTimeout(function(){
       injured.kill();
       injured1.kill();
     }, 100);
-    injured1 = game.add.sprite(0,0,'red');
+    injured1 = game.add.sprite(0,gameHeight/3 *2,'red');
     setTimeout(function(){
       injured1.kill();
       injured.kill();
