@@ -37,7 +37,7 @@
     game.load.spritesheet('berry-bush', 'img/assets/berries.png', 32, 32);
     game.load.spritesheet('bush', 'img/assets/bush.png', 32, 32);
     game.load.spritesheet('character', 'img/assets/main-player.png', 64, 64);
-    game.load.spritesheet('enemy', 'img/assets/enemy.png', 48, 64);
+    game.load.spritesheet('enemy', 'img/assets/enemy2.png', 80, 80);
     game.load.spritesheet('icons', 'img/assets/icons.png', 24, 24);
     game.load.spritesheet('blueJewel', 'img/assets/blue-jewels.png', 32, 32);
     game.load.spritesheet('greenJewel', 'img/assets/green-jewels.png', 32, 32);
@@ -45,6 +45,12 @@
     game.load.spritesheet('pinkJewel', 'img/assets/pink-jewels.png', 32, 32);
     game.load.spritesheet('yellowJewel', 'img/assets/yellow-jewels.png', 32, 32);
     game.load.spritesheet('doors', 'img/assets/doors.png', 32, 64);
+    game.load.audio('background', 'audios/sapphirerain.wav');
+    game.load.audio('jewel', 'audios/jewel.wav');
+    game.load.audio('key', 'audios/key.wav');
+    game.load.audio('door', 'audios/opendoor.wav');
+    game.load.audio('unlock', 'audios/unlock.mp3');
+    game.load.audio('player', 'audios/player.wav');
   }
 
   var gameHeight = 1920;
@@ -58,16 +64,7 @@
   var archer1, archer2, archer3, archer4;
   var locks, injured, injured1, bush;
   var door1, door2;
-
-  // function getPlayerInfo(){
-  //   ajax('/users/life', 'put', {life: 3, dead: 'false'}, user=>{
-  //     player.lastCompletedLevel = user.lastCompletedLevel;
-  //     player.life = user.life * 1;
-  //     player.jewels = user.jewels * 1;
-  //     player.keys = user.items.keys * 1;
-  //     getStats();
-  //   }, 'json');
-  // }
+  var jewelSound, keySound, doorSound, unlockSound, playerSounds;
 
   function create(){
     game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -91,6 +88,15 @@
       addItems();
       addLocks();
     });
+    var music = game.add.sound('background');
+    music.play('', 0, 0.4, true);
+    jewelSound = game.add.sound('jewel');
+    doorSound = game.add.sound('door');
+    keySound = game.add.sound('key');
+    unlockSound = game.add.sound('unlock');
+    playerSounds = game.add.sound('player');
+    playerSounds.override = true;
+    playerSounds.addMarker('hit', 4.5, 1);
   }
 
   function addRug(){
@@ -221,22 +227,22 @@
   function addEnemySprites(){
     enemies = game.add.group();
 
-    enemy1 = game.add.sprite(10, gameHeight - (tile * 5), 'enemy');
+    enemy1 = game.add.sprite(10, gameHeight - (tile * 5) - 12, 'enemy');
     createEnemyAnimations(enemy1);
 
-    enemy2 = game.add.sprite(10, (gameHeight/3)*2+ tile * 2, 'enemy');
+    enemy2 = game.add.sprite(10, (gameHeight/3)*2+ tile + 20, 'enemy');
     createEnemyAnimations(enemy2);
 
-    enemy3 = game.add.sprite(tile * 3, (gameHeight/3)*2 + tile * 5, 'enemy');
+    enemy3 = game.add.sprite(tile * 3, (gameHeight/3)*2 + tile * 5 -12, 'enemy');
     createEnemyAnimations(enemy3);
 
-    enemy4 = game.add.sprite(gameWidth - (tile * 4.75), (gameHeight/3)*2 + tile, 'enemy');
+    enemy4 = game.add.sprite(gameWidth - (tile * 5.25), (gameHeight/3)*2 + tile, 'enemy');
     createEnemyAnimations(enemy4);
   }
 
   function createEnemyAnimations(enemy){
     game.physics.enable(enemy);
-    enemy.body.setSize(32, 64, 8, 0);
+    enemy.body.setSize(32, 64, 24, 12);
     enemy.body.collideWorldBounds = true;
     enemy.animations.add('right', [8, 9, 10, 11], 5, true);
     enemy.animations.add('left', [4, 5, 6, 7], 5, true);
@@ -388,6 +394,7 @@
 
   function unlockDoor(player, lock){
     if(player.keys){
+      unlockSound.play('', 0, 0.8, false);
       lock.door.unlocked = true;
       lock.kill();
       player.keys -= 1;
@@ -400,12 +407,14 @@
 
   function openDoor(p, door){
     if(door.unlocked && !door.opened){
+      doorSound.play('', 0, 0.8, false);
       door.opened = true;
       door.animations.play('open');
     }
   }
 
   function collectKey(player, key){
+    keySound.play('', 0, 0.8, false);
     key.kill();
     player.keys += 1;
     ajax('/users/keys', 'put', {amount: player.keys}, ()=>{
@@ -414,6 +423,7 @@
   }
 
   function collectJewel(player, jewel){
+    jewelSound.play('', 0, 0.1, false);
     var amount;
     switch(jewel.key){
       case 'greenJewel':
@@ -441,6 +451,7 @@
 
   function playerHit(){
     addInjuredSprite();
+    playerSounds.play('hit');
     var dead;
     player.life -= 1;
     if(player.life <= 0){
@@ -608,7 +619,8 @@
   function render(){
     // game.debug.body(arrow);
     // game.debug.body(player);
-    // game.debug.body(enemy1);
+    // game.debug.body(enemy4);
+    // enemies.forEach(e=>{game.debug.body(e);});
     // arrows.forEach(arrow=>{game.debug.body(arrow);});
     // berries.forEach(berry=>{game.debug.body(berry);});
   }
